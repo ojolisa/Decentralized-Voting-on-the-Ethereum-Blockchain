@@ -2,6 +2,7 @@ let web3;
 let votingContract;
 let userAccount;
 let isOfficial = false;
+let eventListenersInitialized = false;
 // contractStateEnum is also available from config.js
 
 // --- DOM Element References ---
@@ -249,6 +250,9 @@ async function loadVoterInfo() {
 // Load all candidates
 async function loadCandidates() {
     if (!votingContract) return;
+
+    candidatesListDiv.innerHTML = '';
+
     try {
         const state = parseInt(await votingContract.methods.state().call()); // Get current state
         const candidates = await votingContract.methods.getCandidates().call();
@@ -595,6 +599,218 @@ function resetUI() {
     isOfficial = false;
 }
 
+function setupEventListeners() {
+    if (!votingContract || eventListenersInitialized) {
+        console.log("Event listeners already initialized or contract not ready.");
+        return;
+    }
+
+    console.log("Setting up contract event listeners...");
+
+    // Listen for state changes (Start/End Voting)
+    votingContract.events.VotingStateChanged({ fromBlock: 'latest' })
+        .on('data', (event) => {
+            console.log('VotingStateChanged event received:', event);
+            const newState = parseInt(event.returnValues.newState);
+            console.log(`Voting state changed to: ${contractStateEnum[newState]}`);
+            // Refresh core state display and potentially results/candidate buttons
+            refreshContractState(); // This handles UI changes based on state
+            loadCandidates();       // Reload candidates to update button states/visibility
+            showNotification(`Voting state updated to: ${contractStateEnum[newState]}`);
+        })
+        .on('error', (error) => {
+            console.error('Error listening to VotingStateChanged:', error);
+        });
+
+    // Listen for new voters being added
+    votingContract.events.VoterAdded({ fromBlock: 'latest' })
+        .on('data', (event) => {
+            console.log('VoterAdded event received:', event);
+            const { voterAddress, voterName } = event.returnValues;
+            console.log(`New voter added: ${voterName} (${voterAddress})`);
+            // Refresh the voters list and total count
+            refreshContractState(); // Update total voter count
+            loadVoters();         // Reload the list of voters
+            showNotification(`Voter registered: ${voterName}`);
+        })
+        .on('error', (error) => {
+            console.error('Error listening to VoterAdded:', error);
+        });
+
+    // Listen for votes being cast
+    votingContract.events.Voted({ fromBlock: 'latest' })
+        .on('data', (event) => {
+            console.log('Voted event received:', event);
+            const { voterAddress, candidateIndex } = event.returnValues;
+            console.log(`Vote cast by ${voterAddress} for candidate index ${candidateIndex}`);
+            // Refresh vote counts, total votes, and potentially voter status
+            refreshContractState(); // Update total vote count
+            loadCandidates();       // Update vote counts on candidate cards
+            loadVoters();         // Update the 'voted' status in the voter list
+
+            // If the current user is the one who voted, update their specific panel
+            if (userAccount && voterAddress.toLowerCase() === userAccount.toLowerCase()) {
+                loadVoterInfo();
+                showNotification("Your vote has been confirmed!");
+            } else {
+                // Optionally show a generic notification for other votes
+                showNotification("A vote was cast.");
+            }
+        })
+        .on('error', (error) => {
+            console.error('Error listening to Voted:', error);
+        });
+
+    eventListenersInitialized = true; // Mark as initialized
+    console.log("Event listeners are active.");
+}
+
+// --- Modify connectWallet ---
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            web3 = new Web3(window.ethereum);
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            userAccount = accounts[0];
+            accountAddressSpan.textContent = userAccount;
+            connectButton.style.display = 'none';
+            accountArea.style.display = 'block';
+
+            if (!contractAddress || contractAddress === "YOUR_CONTRACT_ADDRESS_HERE" || contractAddress === "") {
+                alert("Contract address is not set! Please update config.js");
+                resetUI(); return; // Added resetUI
+            }
+            if (!contractABI || contractABI.length === 0) {
+                alert("Contract ABI is not set! Please check config.js");
+                resetUI(); return; // Added resetUI
+            }
+
+            votingContract = new web3.eth.Contract(contractABI, contractAddress);
+
+            const official = await votingContract.methods.official().call();
+            isOfficial = (official.toLowerCase() === userAccount.toLowerCase());
+
+            if (isOfficial) {
+                adminPanel.style.display = 'block';
+            } else {
+                adminPanel.style.display = 'none';
+            }
+
+            // Load initial data
+            await refreshContractState();
+            await loadVoterInfo();
+            await loadCandidates();
+            await loadVoters();
+
+            // Setup listeners for wallet changes
+            window.ethereum.on('accountsChanged', handleAccountsChanged);
+            window.ethereum.on('chainChanged', handleChainChanged);
+
+            // ****** Setup Contract Event Listeners ******
+            setupEventListeners();
+            // *******************************************
+
+        } catch (error) {
+            console.error("User denied account access or error occurred:", error);
+            alert(`Error connecting to MetaMask: ${error.message || error}`);
+            resetUI();
+        }
+    } else {
+        alert("MetaMask is not installed. Please install MetaMask to use this DApp.");
+        resetUI(); // Ensure UI resets if MetaMask isn't found
+    }
+}
+
+// --- Add a simple notification function (optional enhancement) ---
+function showNotification(message, duration = 3000) {
+    // You can replace this with a more sophisticated toast library
+    const notificationArea = document.getElementById('notificationArea');
+    if (!notificationArea) { // Create it if it doesn't exist
+        const container = document.querySelector('.container');
+        const div = document.createElement('div');
+        div.id = 'notificationArea';
+        div.style.position = 'fixed';
+        div.style.bottom = '20px';
+        div.style.right = '20px';
+        div.style.zIndex = '2000';
+        container?.parentNode?.insertBefore(div, container.nextSibling); // Append after container
+    }
+
+    const notificationElement = document.createElement('div');
+    notificationElement.className = 'alert alert-info alert-dismissible fade show shadow-sm'; // Use Bootstrap alert
+    notificationElement.style.minWidth = '250px';
+    notificationElement.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    document.getElementById('notificationArea')?.appendChild(notificationElement);
+
+    // Auto-dismiss
+    setTimeout(() => {
+        const bsAlert = bootstrap.Alert.getOrCreateInstance(notificationElement);
+        if (bsAlert) {
+            bsAlert.close();
+        } else {
+            notificationElement.remove(); // Fallback removal
+        }
+    }, duration);
+}
+
+// --- Modify resetUI to handle potential listeners ---
+function resetUI() {
+    // ... (keep existing reset logic) ...
+    accountAddressSpan.textContent = '';
+    accountArea.style.display = 'none';
+    connectButton.style.display = 'block';
+    adminPanel.style.display = 'none';
+    voterPanel.style.display = 'none';
+    resultsSection.style.display = 'none';
+
+    contractStateSpan.textContent = 'N/A'; // Indicate not connected
+    contractStateSpan.className = 'badge bg-dark state-badge'; // Use a 'disconnected' color
+    totalVotersSpan.textContent = '-';
+    totalVotesSpan.textContent = '-';
+    candidatesListDiv.innerHTML = '<p>Connect wallet to load candidates.</p>';
+    votersListDiv.innerHTML = '<p>Connect wallet to load voters.</p>';
+    winnerNameSpan.textContent = '-'; // Reset winner
+
+    // Clean up Web3 objects and flags
+    web3 = null;
+    votingContract = null; // Crucial: Ensure contract object is cleared
+    userAccount = null;
+    isOfficial = false;
+    eventListenersInitialized = false; // Allow listeners to be setup again on reconnect
+
+    // Remove Ethereum listeners to prevent memory leaks if page isn't reloaded
+    if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+    }
+    console.log("UI Reset and Listeners potentially cleaned up.");
+}
+
+// --- Modify handleAccountsChanged and handleChainChanged ---
+// Ensure they call resetUI or reload properly
+
+function handleAccountsChanged(accounts) {
+    if (accounts.length === 0) {
+        console.log('MetaMask disconnected.');
+        resetUI(); // Call resetUI to clean state
+        showNotification("Wallet disconnected. Please reconnect.", 5000);
+    } else if (accounts[0] !== userAccount) { // Check if account actually changed
+        console.log('Account changed. Reloading page...');
+        showNotification("Account changed. Reloading...", 3000);
+        // Reloading is the simplest way to ensure everything re-initializes correctly
+        window.location.reload();
+    }
+}
+
+function handleChainChanged(_chainId) {
+    console.log('Network changed. Reloading page...');
+    showNotification("Network changed. Reloading...", 3000);
+    window.location.reload();
+}
 
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
