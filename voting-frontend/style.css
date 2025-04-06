@@ -1,0 +1,495 @@
+/* Import a clean sans-serif font (optional, but recommended) */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
+/* Define root variables for consistent theming */
+:root {
+  --primary-color: #0d6efd;
+  --primary-color-hover: #0b5ed7;
+  --success-color: #198754;
+  --success-color-hover: #157347;
+  --danger-color: #dc3545;
+  --danger-color-hover: #bb2d3b;
+  --secondary-color: #6c757d;
+  --light-gray: #f8f9fa;
+  --medium-gray: #dee2e6;
+  --dark-gray: #495057;
+  --white: #ffffff;
+  --black: #000000;
+
+  --body-bg: var(--light-gray);
+  --card-bg: var(--white);
+  --card-header-bg: #f1f8ff; /* Keeping this specific light blue */
+  --card-border-color: var(--medium-gray);
+  --text-color: var(--dark-gray);
+  --heading-color: var(--black);
+
+  --font-family-base: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --border-radius: 0.375rem; /* Default Bootstrap radius */
+  --box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --box-shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  --box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.125);
+  --transition-base: all 0.2s ease-in-out;
+}
+
+/* Apply base styles */
+body {
+  padding-top: 30px; /* Increased padding */
+  padding-bottom: 30px;
+  background-color: var(--body-bg);
+  font-family: var(--font-family-base);
+  color: var(--text-color);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--heading-color);
+  font-weight: 700; /* Bolder headings */
+}
+
+/* Container Enhancements */
+.container {
+  max-width: 850px; /* Slightly wider */
+  background-color: var(--card-bg);
+  padding: 40px; /* More padding */
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-md);
+  margin: 30px auto; /* Ensure centering and consistent margin */
+}
+
+/* Card Enhancements */
+.card {
+  margin-bottom: 25px; /* Slightly more margin */
+  border: 1px solid var(--card-border-color); /* Subtle border */
+  box-shadow: var(--box-shadow-sm);
+  border-radius: var(--border-radius);
+  transition: var(--transition-base); /* Add transition to all cards */
+}
+
+.card:hover {
+  box-shadow: var(--box-shadow-md); /* Lift effect on hover */
+}
+
+.card-header {
+  background-color: var(--card-header-bg);
+  font-weight: 500; /* Slightly less bold than default */
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--card-border-color);
+  border-top-left-radius: var(--border-radius); /* Ensure consistent radius */
+  border-top-right-radius: var(--border-radius);
+}
+
+.card-body {
+  padding: 1.5rem; /* More padding inside cards */
+}
+
+/* Button Enhancements */
+.btn {
+  padding: 0.6rem 1.2rem; /* Slightly larger padding */
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: var(--transition-base);
+  border: none; /* Remove default border if using solid backgrounds */
+}
+
+/* Specific Button Colors (using variables) */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background-color: var(--primary-color-hover);
+  color: var(--white);
+  transform: translateY(-2px); /* Subtle lift */
+  box-shadow: var(--box-shadow-sm);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+.btn-success:hover {
+  background-color: var(--success-color-hover);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-sm);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: var(--white);
+}
+.btn-danger:hover {
+  background-color: var(--danger-color-hover);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--box-shadow-sm);
+}
+
+/* Accessibility: Clear Focus States for Buttons and Inputs */
+.btn:focus-visible,
+input.form-control:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25); /* Bootstrap-like focus ring */
+}
+/* Remove default outline when focus-visible is supported */
+.btn:focus:not(:focus-visible),
+input.form-control:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Alert Box Refinement */
+.alert-info {
+  background-color: #e0f2fe; /* Softer blue */
+  border-color: #7dd3fc;
+  color: #075985;
+}
+
+/* State Badge Styling */
+.state-badge {
+  font-size: 0.9rem; /* Slightly smaller */
+  padding: 6px 10px;
+  font-weight: 500;
+  vertical-align: middle; /* Align better with text */
+}
+
+/* Loading Indicator Enhancements */
+#loadingIndicator {
+  display: none;
+  position: fixed; /* Keep it visible even when scrolling */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent overlay */
+  z-index: 1050; /* Ensure it's above other content */
+  text-align: center;
+  padding-top: 30vh; /* Center vertically */
+}
+#loadingIndicator .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3em;
+  color: var(--primary-color);
+}
+#loadingIndicator p {
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: var(--dark-gray);
+  font-weight: 500;
+}
+
+/* Candidate Card Enhancements */
+.candidate-card {
+  border-left: 5px solid var(--primary-color);
+  transition: var(--transition-base);
+  background-color: var(--card-bg); /* Ensure background */
+  display: flex; /* Use flex for consistent height if needed */
+  flex-direction: column;
+}
+
+.candidate-card:hover {
+  transform: translateY(-4px) scale(1.02); /* Slightly more pronounced hover */
+  box-shadow: var(--box-shadow-lg);
+}
+
+.candidate-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Make body grow to fill height */
+}
+
+.candidate-card .card-title {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.candidate-card .vote-count {
+  font-size: 1.75rem; /* Larger vote count */
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-top: auto; /* Push vote count and button down */
+  margin-bottom: 1rem;
+}
+
+.candidate-card .btn {
+  margin-top: 0.5rem; /* Space between count and button */
+  width: 100%; /* Make vote button full width */
+}
+
+/* Input Group Styling (Admin Panel) */
+.input-group .form-control {
+  border-radius: var(--border-radius); /* Ensure consistent radius */
+}
+/* Ensure button attaches correctly */
+.input-group
+  > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(
+    .valid-feedback
+  ):not(.invalid-tooltip):not(.invalid-feedback) {
+  margin-left: -1px; /* Bootstrap default */
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.input-group
+  > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(
+    .form-floating
+  ) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.input-group .btn {
+  border-radius: var(--border-radius); /* Re-apply radius */
+}
+
+/* Table styling for Voters & Results */
+.table {
+  margin-bottom: 0; /* Remove default table margin if inside a card */
+}
+
+.table th {
+  font-weight: 500;
+  color: var(--dark-gray);
+  background-color: var(--light-gray); /* Light header for tables */
+  border-bottom-width: 1px; /* Slightly thinner border */
+}
+
+.table td,
+.table th {
+  padding: 0.85rem; /* More padding in cells */
+  vertical-align: middle;
+}
+
+/* Highlight winner row in results */
+#resultsList .table-success th,
+#resultsList .table-success td {
+  background-color: #d1e7dd !important; /* Ensure override */
+  color: #0f5132 !important;
+  font-weight: 700;
+}
+
+/* Keep ALL your previous light-mode CSS rules here */
+/* ... (body, .container, .card, .btn, :root variables for light mode, etc.) ... */
+
+/* ========================================= */
+/* Dark Mode Styles (Applied via body class) */
+/* ========================================= */
+
+/* Define dark mode variables and overrides when body has .dark-mode class */
+body.dark-mode {
+  /* Dark Theme Palette Re-definitions */
+  --primary-color: #3b82f6;
+  --primary-color-hover: #60a5fa;
+  --success-color: #22c55e;
+  --success-color-hover: #4ade80;
+  --danger-color: #ef4444;
+  --danger-color-hover: #f87171;
+  --secondary-color: #a1a1aa;
+  --dark-bg-primary: #111827;
+  --dark-bg-secondary: #1f2937;
+  --dark-bg-tertiary: #374151;
+  --dark-border-color: #4b5563;
+  --dark-text-primary: #f9fafb;
+  --dark-text-secondary: #d1d5db;
+  --dark-text-placeholder: #9ca3af;
+
+  /* --- Variable Re-mapping --- */
+  --light-gray: var(--dark-bg-secondary);
+  --medium-gray: var(--dark-border-color);
+  --dark-gray: var(--dark-text-secondary);
+  --white: var(--dark-bg-primary);
+  --black: var(--dark-text-primary);
+
+  --body-bg: var(--dark-bg-primary);
+  --card-bg: var(--dark-bg-primary);
+  --card-header-bg: var(--dark-bg-secondary);
+  --card-border-color: var(--dark-border-color);
+  --text-color: var(--dark-text-secondary);
+  --heading-color: var(--dark-text-primary);
+
+  --box-shadow-sm: 0 1px 2px 0 rgba(255, 255, 255, 0.03);
+  --box-shadow-md: 0 4px 6px -1px rgba(255, 255, 255, 0.04),
+    0 2px 4px -2px rgba(255, 255, 255, 0.04);
+  --box-shadow-lg: 0 10px 15px -3px rgba(255, 255, 255, 0.04),
+    0 4px 6px -4px rgba(255, 255, 255, 0.04);
+
+  /* --- Apply Dark Mode Base Styles --- */
+  background-color: var(--body-bg);
+  color: var(--text-color);
+}
+
+/* --- Specific Component Adjustments for Dark Mode --- */
+/* Prefix selectors with body.dark-mode or ensure they target elements within it */
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: var(--heading-color);
+}
+
+body.dark-mode .container {
+  background-color: var(
+    --card-bg
+  ); /* Container inherits card background in dark */
+  /* Use border if container bg needs to differ from body bg */
+  /* border: 1px solid var(--card-border-color); */
+}
+
+body.dark-mode .card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border-color);
+  box-shadow: none;
+}
+
+body.dark-mode .card:hover {
+  background-color: var(--dark-bg-secondary);
+  border-color: #535f70;
+  box-shadow: var(--box-shadow-md);
+}
+
+body.dark-mode .card-header {
+  background-color: var(--card-header-bg);
+  border-color: var(--card-border-color);
+  color: var(--heading-color); /* Ensure header text is light */
+}
+
+/* Buttons in Dark Mode */
+body.dark-mode .btn-primary,
+body.dark-mode .btn-success,
+body.dark-mode .btn-danger {
+  color: #ffffff; /* Ensure contrast */
+}
+/* Hover states use variables which are already redefined */
+
+/* Focus Rings in Dark Mode */
+body.dark-mode .btn:focus-visible,
+body.dark-mode input.form-control:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+/* Alerts in Dark Mode */
+body.dark-mode .alert-info {
+  background-color: #1e3a8a;
+  border-color: #3b82f6;
+  color: #bfdbfe;
+}
+
+/* Loading Indicator in Dark Mode */
+body.dark-mode #loadingIndicator {
+  background-color: rgba(17, 24, 39, 0.9);
+}
+body.dark-mode #loadingIndicator p {
+  color: var(--text-color);
+}
+
+/* Candidate Card in Dark Mode */
+body.dark-mode .candidate-card {
+  border-left-color: var(--primary-color);
+}
+body.dark-mode .vote-count {
+  color: var(--primary-color);
+}
+
+/* Tables in Dark Mode */
+body.dark-mode .table {
+  color: var(--text-color);
+  border-color: var(--card-border-color);
+  background-color: transparent;
+}
+body.dark-mode .table th {
+  color: var(--heading-color);
+  background-color: var(--dark-bg-tertiary);
+  border-color: var(--card-border-color);
+}
+body.dark-mode .table td,
+body.dark-mode .table th {
+  border-color: var(--card-border-color);
+}
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.02);
+  color: var(--text-color);
+}
+body.dark-mode .table-striped > tbody > tr:nth-of-type(even) > * {
+  color: var(--text-color);
+  background-color: transparent;
+}
+body.dark-mode .table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: rgba(255, 255, 255, 0.05);
+  color: var(--heading-color);
+}
+body.dark-mode #resultsList .table-success th,
+body.dark-mode #resultsList .table-success td {
+  background-color: #052e16 !important;
+  color: #86efac !important;
+  border-color: #15803d !important;
+}
+
+/* Inputs in Dark Mode */
+body.dark-mode .form-control {
+  background-color: var(--dark-bg-tertiary);
+  color: var(--text-color);
+  border-color: var(--dark-border-color);
+}
+body.dark-mode .form-control::placeholder {
+  color: var(--dark-text-placeholder);
+}
+body.dark-mode .form-control:focus {
+  background-color: var(--dark-bg-tertiary);
+  color: var(--text-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+/* Bootstrap background utilities in Dark Mode */
+body.dark-mode .bg-secondary {
+  background-color: var(--secondary-color) !important;
+  color: var(--dark-bg-primary) !important;
+}
+body.dark-mode .bg-success {
+  background-color: var(--success-color) !important;
+  color: #ffffff !important;
+}
+body.dark-mode .bg-danger {
+  background-color: var(--danger-color) !important;
+  color: #ffffff !important;
+}
+body.dark-mode .badge.bg-secondary {
+  color: #111827 !important;
+}
+
+/* --- Theme Toggle Button Style --- */
+#themeToggleBtn {
+  /* Add specific styles if needed, */
+  /* for example, ensure visibility in both modes */
+  border-color: var(
+    --medium-gray
+  ); /* Use a variable that works in both modes */
+  color: var(--text-color); /* Use text color variable */
+  min-width: 80px; /* Give it some space for icons/text */
+  text-align: center;
+}
+
+body.dark-mode #themeToggleBtn {
+  border-color: var(--dark-border-color);
+  color: var(--dark-text-secondary);
+}
+body.dark-mode #themeToggleBtn:hover {
+  background-color: var(--dark-bg-secondary);
+  color: var(--dark-text-primary);
+}
+#themeToggleBtn:hover {
+  background-color: #e9ecef; /* Light hover */
+}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Voting DApp</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="text-center mb-0">Blockchain Voting DApp</h1>
+            <button id="themeToggleBtn" class="btn btn-outline-secondary btn-sm">
+                <!-- Icon/Text will be updated by JS -->
+                ☀️ Light
+            </button>
+        </div>
+        <div class="alert alert-info" role="alert">
+            <div>Contract Status: <span id="contractState" class="badge bg-secondary state-badge">Loading...</span>
+            </div>
+            <div>Total Voters: <span id="totalVoters">-</span></div>
+            <div>Total Votes Cast: <span id="totalVotes">-</span></div>
+        </div>
+
+        <div id="connectWallet" class="card mb-4">
+            <div class="card-header">Connect Wallet</div>
+            <div class="card-body">
+                <button id="connectButton" class="btn btn-primary">Connect to MetaMask</button>
+                <div id="accountArea" style="display:none;">
+                    <p>Connected Account: <span id="accountAddress"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminPanel" class="card mb-4" style="display:none;">
+            <div class="card-header">Admin Panel</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>Voter Registration</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="voterAddress" placeholder="Voter Ethereum Address">
+                        <input type="text" class="form-control" id="voterName" placeholder="Voter Name">
+                        <button class="btn btn-primary" id="registerVoter">Register Voter</button>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-success" id="startVoting">Start Voting</button>
+                    <button class="btn btn-danger" id="endVoting">End Voting</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="voterPanel" class="card mb-4" style="display:none;">
+            <div class="card-header">Voter Panel</div>
+            <div class="card-body">
+                <div id="voterInfo">
+                    <p>Voter Name: <span id="currentVoterName">-</span></p>
+                    <p>Voted: <span id="hasVoted">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="candidatesSection" class="card mb-4">
+            <div class="card-header">Candidates</div>
+            <div class="card-body">
+                <div id="candidatesList" class="row">
+                    <!-- Candidates will be loaded here by script.js -->
+                    <p>Loading candidates...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="card mb-4" style="display:none;">
+            <div class="card-header">Election Results</div>
+            <div class="card-body">
+                <h5>Winner: <span id="winnerName">-</span></h5>
+                <div id="resultsList">
+                    <!-- Results will be shown here by script.js -->
+                </div>
+            </div>
+        </div>
+
+        <div id="registeredVoters" class="card mb-4">
+            <div class="card-header">Registered Voters</div>
+            <div class="card-body">
+                <div id="votersList">
+                    <!-- Voters will be loaded here by script.js -->
+                    <p>Loading voters list...</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Processing transaction...</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Web3 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.1/web3.min.js"></script>
+    <!-- Configuration -->
+    <script src="config.js"></script>
+    <!-- Custom DApp Logic -->
+    <script src="script.js"></script>
+</body>
+
+</html>
