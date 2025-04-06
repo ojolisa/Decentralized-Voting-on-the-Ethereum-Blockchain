@@ -221,6 +221,13 @@ function setupEventListeners() {
             loadCandidates();
         });
 
+    votedListener = votingContract.events.Voted({ fromBlock: 'latest' })
+        .on('data', (event) => {
+            console.log('Event: Voted received:', event.transactionHash);
+            refreshContractState();
+            loadVoters(); // Refresh the voter list to update their status
+        });
+
     eventListenersInitialized = true;
     console.log("Contract event listeners are now active.");
 }
@@ -333,7 +340,7 @@ async function loadVoterInfo() {
 }
 
 async function loadCandidates() {
-    if (!votingContract) return;
+    if (!votingContract || !userAccount) return;
     candidatesListDiv.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
 
     try {
@@ -341,20 +348,25 @@ async function loadCandidates() {
         const stateResult = await votingContract.methods.state().call();
         const state = parseInt(stateResult); // Ensure number
 
+        // Check if the voter has already voted
+        const voterInfo = await votingContract.methods.voterRegister(userAccount).call();
+        const hasVoted = voterInfo.voted;
+
         candidatesListDiv.innerHTML = ''; // Clear previous content
 
         candidates.forEach((candidate, index) => {
             const candidateCard = document.createElement('div');
             candidateCard.className = 'col-md-4 mb-3 d-flex';
 
-            const isVotingEnded = (state === 2); // Check if voting has ended
+            const isVotingActive = (state === 1); // Check if voting is active
+            const isButtonDisabled = !isVotingActive || isOfficial || hasVoted; // Disable if not active, user is admin, or voter has already voted
 
             candidateCard.innerHTML = `
                 <div class="card candidate-card flex-fill">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${candidate.candidateName}</h5>
                         <p class="card-text vote-count mt-auto mb-2">Votes: <span class="fw-bold">${candidate.voteCount.toString()}</span></p>
-                        <button class="btn btn-primary vote-btn w-100" data-index="${index}" ${isVotingEnded ? 'disabled' : ''}>Vote</button>
+                        <button class="btn btn-primary vote-btn w-100" data-index="${index}" ${isButtonDisabled ? 'disabled' : ''}>Vote</button>
                     </div>
                 </div>
             `;
@@ -429,12 +441,12 @@ async function loadVoters() {
         // Populate table body
         votersTableBody.innerHTML = ''; // Clear just in case
         voterDetails.forEach((voter, index) => {
-            const row = votersTableBody.insertRow();
             const votedStatus = voter.voted === true ? '<span class="text-success">✓ Yes</span>' :
                 voter.voted === false ? '<span class="text-danger">✗ No</span>' :
                     '<span class="text-muted">N/A</span>';
             const shortAddress = `${voter.address.substring(0, 6)}...${voter.address.substring(voter.address.length - 4)}`;
 
+            const row = votersTableBody.insertRow();
             row.innerHTML = `
                 <th scope="row">${index + 1}</th>
                 <td><small title="${voter.address}">${shortAddress}</small></td>
@@ -442,6 +454,13 @@ async function loadVoters() {
                 <td>${votedStatus}</td>
             `;
         });
+
+        // Dynamically update the voter list when the "Voted" event is triggered
+        votedListener = votingContract.events.Voted({ fromBlock: 'latest' })
+            .on('data', async () => {
+                console.log('Voted event detected. Reloading voter list...');
+                await loadVoters(); // Reload the voter list dynamically
+            });
 
     } catch (error) {
         console.error("Error loading voters list:", error);
