@@ -4,7 +4,7 @@ This project is a decentralized voting application (DApp) built on the Ethereum 
 
 ## Features
 
-- **Admin Panel**: 
+- **Admin Panel**:
   - Register voters with their Ethereum address and name.
   - Start and end the voting period.
 - **Voter Panel**:
@@ -23,6 +23,7 @@ This project is a decentralized voting application (DApp) built on the Ethereum 
 The smart contract is written in Solidity and deployed on the Ethereum blockchain. It manages the election process, including voter registration, voting, and result calculation.
 
 ### Key Components:
+
 - **State Management**: The contract has three states: `Created`, `Voting`, and `Ended`.
 - **Voter Registration**: Admins can register voters before the voting period starts.
 - **Voting**: Registered voters can vote for candidates during the voting period.
@@ -31,7 +32,6 @@ The smart contract is written in Solidity and deployed on the Ethereum blockchai
 ## Project Structure
 
 blockchain_voting-main/ ├── Voting.sol # Smart contract for the voting system ├── voting-frontend/ │ ├── index.html # Frontend HTML file │ ├── style.css # Custom CSS for styling │ ├── script.js # Frontend logic and interaction with the smart contract │ ├── config.js # Configuration file with contract address and ABI
-
 
 ## Prerequisites
 
@@ -42,6 +42,7 @@ blockchain_voting-main/ ├── Voting.sol # Smart contract for the voting sys
 ## How to Run the Project
 
 ### 1. Deploy the Smart Contract
+
 1. Install [Remix IDE](https://remix.ethereum.org/) or use any Ethereum development environment.
 2. Copy the contents of `Voting.sol` into the IDE.
 3. Compile the contract using Solidity version `^0.8.0`.
@@ -49,16 +50,19 @@ blockchain_voting-main/ ├── Voting.sol # Smart contract for the voting sys
 5. Note the deployed contract address.
 
 ### 2. Configure the Frontend
+
 1. Open `voting-frontend/config.js`.
 2. Replace the placeholder `contractAddress` with the deployed contract address.
 3. Ensure the `contractABI` matches the ABI of the deployed contract.
 
 ### 3. Run the Frontend
+
 1. Open the `voting-frontend` folder.
 2. Open `index.html` in a browser.
 3. Ensure MetaMask is installed and connected to the same network as the deployed contract.
 
 ### 4. Using the DApp
+
 - **Admin Actions**:
   - Connect your wallet using the "Connect to MetaMask" button.
   - Register voters by entering their Ethereum address and name.
@@ -70,6 +74,7 @@ blockchain_voting-main/ ├── Voting.sol # Smart contract for the voting sys
   - Cast your vote for a candidate during the voting period.
 
 ### 5. View Results
+
 - After the voting period ends, the results will be displayed in the "Election Results" section.
 
 ## Notes

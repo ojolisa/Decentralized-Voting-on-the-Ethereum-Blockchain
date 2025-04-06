@@ -194,70 +194,31 @@ function setupEventListeners() {
         return;
     }
     if (eventListenersInitialized) {
-        // console.log("Listeners already initialized."); // Optional: reduce noise
-        return;
+        return; // Prevent duplicate listeners
     }
 
     console.log("Setting up contract event listeners...");
     clearContractEventListeners(); // Clear any potential old listeners first
 
-    // Listen for state changes
     stateChangedListener = votingContract.events.VotingStateChanged({ fromBlock: 'latest' })
         .on('data', (event) => {
             console.log('Event: VotingStateChanged received:', event.transactionHash);
-            const newState = parseInt(event.returnValues.newState);
-            // Use timeout to ensure log appears first and avoid potential race conditions with other updates
-            setTimeout(() => {
-                console.log(`Processing VotingStateChanged for Tx: ${event.transactionHash}, New State: ${contractStateEnum[newState]}`);
-                showNotification(`Voting state updated to: ${contractStateEnum[newState]}`, 3000, 'info');
-                refreshContractState(); // Update state display, button enables, results visibility
-                loadCandidates();       // Reload candidates to update button states/visibility
-                // No need to reload voters list on state change usually
-            }, 0);
-        })
-        .on('error', (error, receipt) => {
-            console.error('Error on VotingStateChanged listener:', error, receipt);
+            refreshContractState();
+            loadCandidates();
         });
 
-    // Listen for new voters
     voterAddedListener = votingContract.events.VoterAdded({ fromBlock: 'latest' })
         .on('data', (event) => {
             console.log('Event: VoterAdded received:', event.transactionHash);
-            const { voterAddress, voterName } = event.returnValues;
-            setTimeout(() => {
-                console.log(`Processing VoterAdded for Tx: ${event.transactionHash}, Voter: ${voterName}`);
-                showNotification(`Voter registered: ${voterName}`, 3000, 'success');
-                refreshContractState(); // Update total voter count
-                loadVoters();         // Reload the list of voters
-            }, 0);
-        })
-        .on('error', (error, receipt) => {
-            console.error('Error on VoterAdded listener:', error, receipt);
+            refreshContractState();
+            loadVoters();
         });
 
-    // Listen for votes
     votedListener = votingContract.events.Voted({ fromBlock: 'latest' })
         .on('data', (event) => {
             console.log('Event: Voted received:', event.transactionHash);
-            const { voterAddress, candidateIndex } = event.returnValues;
-            setTimeout(() => {
-                console.log(`Processing Voted event for Tx: ${event.transactionHash}, Voter: ${voterAddress}`);
-                refreshContractState(); // Update total vote count
-                loadCandidates();       // Update vote counts on candidate cards & disable buttons if needed
-                loadVoters();         // Update the 'voted' status in the voter list
-
-                // Check if the current user is the one who voted
-                if (userAccount && voterAddress.toLowerCase() === userAccount.toLowerCase()) {
-                    loadVoterInfo(); // Update their specific voter panel
-                    showNotification("Your vote has been successfully recorded!", 3000, 'success');
-                } else {
-                    // Notify subtly about other votes
-                    showNotification(`A vote was cast by ${voterAddress.substring(0, 6)}...`, 2000, 'light');
-                }
-            }, 0);
-        })
-        .on('error', (error, receipt) => {
-            console.error('Error on Voted listener:', error, receipt);
+            refreshContractState();
+            loadCandidates();
         });
 
     eventListenersInitialized = true;
@@ -373,66 +334,35 @@ async function loadVoterInfo() {
 
 async function loadCandidates() {
     if (!votingContract) return;
-    candidatesListDiv.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>'; // Loading indicator
+    candidatesListDiv.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
 
     try {
-        const stateResult = await votingContract.methods.state().call();
-        const state = parseInt(stateResult);
         const candidates = await votingContract.methods.getCandidates().call();
-        // console.log("Raw candidates from contract:", JSON.stringify(candidates)); // Debugging
+        const stateResult = await votingContract.methods.state().call();
+        const state = parseInt(stateResult); // Ensure number
 
-        candidatesListDiv.innerHTML = ''; // Clear loading/previous list
-
-        if (!candidates || candidates.length === 0) {
-            candidatesListDiv.innerHTML = '<p class="text-muted">No candidates have been added yet.</p>';
-            return;
-        }
-
-        // Determine if the current user can vote (must be in Voting state, registered, and not voted yet)
-        let voterCanVote = false;
-        if (userAccount && state === 1) { // Only check if Voting is active
-            try {
-                const voterInfo = await votingContract.methods.voterRegister(userAccount).call();
-                if (voterInfo && voterInfo.voterName !== "" && !voterInfo.voted) {
-                    voterCanVote = true;
-                }
-            } catch (e) {
-                // Expected error if user not registered, voterCanVote remains false
-                // console.log("User not registered, cannot vote.");
-            }
-        }
+        candidatesListDiv.innerHTML = ''; // Clear previous content
 
         candidates.forEach((candidate, index) => {
             const candidateCard = document.createElement('div');
-            candidateCard.className = 'col-md-4 mb-3 d-flex'; // Use d-flex for equal height cards
+            candidateCard.className = 'col-md-4 mb-3 d-flex';
 
-            // Vote button logic
-            let voteButtonHTML = '';
-            if (state === 1) { // Only show vote buttons if Voting is active
-                const disabledAttr = !voterCanVote ? 'disabled title="You are not registered, have already voted, or voting is not active."' : '';
-                voteButtonHTML = `<button class="btn btn-primary vote-btn w-100" data-index="${index}" ${disabledAttr}>Vote</button>`;
-            } else if (state === 0) {
-                voteButtonHTML = `<button class="btn btn-secondary w-100" disabled>Voting not started</button>`;
-            } else { // state === 2 (Ended) or unknown
-                voteButtonHTML = `<button class="btn btn-secondary w-100" disabled>Voting ended</button>`;
-            }
-
+            const isVotingEnded = (state === 2); // Check if voting has ended
 
             candidateCard.innerHTML = `
                 <div class="card candidate-card flex-fill">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${candidate.candidateName}</h5>
                         <p class="card-text vote-count mt-auto mb-2">Votes: <span class="fw-bold">${candidate.voteCount.toString()}</span></p>
-                        ${voteButtonHTML}
+                        <button class="btn btn-primary vote-btn w-100" data-index="${index}" ${isVotingEnded ? 'disabled' : ''}>Vote</button>
                     </div>
                 </div>
             `;
             candidatesListDiv.appendChild(candidateCard);
         });
 
-        // Add event listeners ONLY to ENABLED vote buttons
-        document.querySelectorAll('.vote-btn:not([disabled])').forEach(button => {
-            // Remove first to prevent duplicates if loadCandidates is called rapidly
+        // Remove and re-add event listeners to avoid duplicates
+        document.querySelectorAll('.vote-btn').forEach(button => {
             button.removeEventListener('click', handleVoteButtonClick);
             button.addEventListener('click', handleVoteButtonClick);
         });
@@ -440,7 +370,6 @@ async function loadCandidates() {
     } catch (error) {
         console.error("Error loading candidates:", error);
         candidatesListDiv.innerHTML = '<p class="text-danger">Error loading candidates. Check console.</p>';
-        showNotification("Could not load candidates.", 4000, 'warning');
     }
 }
 
