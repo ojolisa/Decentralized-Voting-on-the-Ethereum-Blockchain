@@ -172,8 +172,10 @@ input.form-control:focus:not(:focus-visible) {
   height: 100%;
   background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent overlay */
   z-index: 1050; /* Ensure it's above other content */
-  text-align: center;
-  padding-top: 30vh; /* Center vertically */
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  flex-direction: column; /* Stack spinner and text vertically */
 }
 #loadingIndicator .spinner-border {
   width: 3rem;

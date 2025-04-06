@@ -1,4 +1,4 @@
-const contractAddress = "0x33c61820e75B2034183a99ec9af4Adf86801568b";
+const contractAddress = "0x68E7AE2C601Fbea50CD0Adf2F93648D7dC915CE2";
 
 // Contract ABI (Application Binary Interface) - Defines how to interact with the contract
 const contractABI =
